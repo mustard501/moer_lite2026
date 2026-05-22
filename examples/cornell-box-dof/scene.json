@@ -10,7 +10,7 @@
   "camera" : {
     "type" : "thinlens",
     "lensRadius" : 0.5,
-    "focalDistance" : 6.5,
+    "focalDistance" : 5.7,
     "transform" : {
       "position" : [0, 0.5, 6],
       "up" : [0, 1, 0],

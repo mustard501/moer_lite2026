@@ -8,8 +8,35 @@ bool Disk::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     //* 4.检验交点是否在圆环内
     //* 5.更新ray的tFar,减少光线和其他物体的相交计算次数
     //* Write your code here.
-    return false;
+    Ray localRay = transform.inverseRay(ray);
+    Point3f origin = localRay.origin;
+    Vector3f direction = localRay.direction;
+    if(direction[2] == 0){
+        return false;
+    }
+    float t = -origin[2] / direction[2];
+    if(t < ray.tNear || t > ray.tFar){
+        return false;
+    }
+    Point3f hit = origin + t*direction;
+    float distance = (hit - Point3f(0, 0, 0)).length();
+    if(distance > radius || distance < innerRadius){
+        return false;
+    }
+    float phi = atan2(hit[1], hit[0]);
+    if(phi < 0){
+        phi += 2*PI;
+    }
+    if(phi > phiMax){
+        return false;
+    }
+    *primID = 0;
+    *u = phi / phiMax;
+    *v = (distance -innerRadius) / (radius - innerRadius);
+    ray.tFar = t;
+    return true;
 }
+
 
 void Disk::fillIntersection(float distance, int primID, float u, float v, Intersection *intersection) const {
     /// ----------------------------------------------------
@@ -19,6 +46,11 @@ void Disk::fillIntersection(float distance, int primID, float u, float v, Inters
     //* Write your code here.
     /// ----------------------------------------------------
 
+    float phi = u * phiMax;
+    float theta = v * (radius - innerRadius) + innerRadius;
+    Point3f position = Point3f(0, 0, 0) + theta * Vector3f(cos(phi), sin(phi), 0);
+    intersection->position = transform.toWorld(position);
+    intersection->normal = transform.toWorld(Vector3f(0, 0, 1));
 
     intersection->shape = this;
     intersection->distance = distance;
